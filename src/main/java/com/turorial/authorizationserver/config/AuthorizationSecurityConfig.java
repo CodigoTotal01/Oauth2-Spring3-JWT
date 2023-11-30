@@ -4,6 +4,7 @@ import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
+import com.turorial.authorizationserver.service.ClientService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
@@ -47,6 +48,7 @@ import java.util.stream.Collectors;
 public class AuthorizationSecurityConfig {
 
     private final PasswordEncoder passwordEncoder;
+    private final ClientService clientService;
 
     @Bean
     @Order(1)
@@ -64,22 +66,23 @@ public class AuthorizationSecurityConfig {
     @Order(2)
     //Para limitar el acceso a la rutas
     public SecurityFilterChain webSecurityFilterChain(HttpSecurity http) throws Exception {
-        http.authorizeHttpRequests(auth -> auth.requestMatchers("/auth/**").permitAll().anyRequest().authenticated())
+        http.authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/auth/**", "/client/**").permitAll().anyRequest().authenticated())
                 .formLogin(Customizer.withDefaults());
-        http.csrf().ignoringRequestMatchers("/auth/**");
+        http.csrf().ignoringRequestMatchers("/auth/**", "/client/**");
         return http.build();
     }
 
 
-   /* @Bean
-    public UserDetailsService userDetailsService(){
-        UserDetails userDetails = User.withUsername("user")
-                .password("{noop}user")
-                .authorities("ROLE_USER")
-                .build();
-        return new InMemoryUserDetailsManager(userDetails);
-    }*/
-
+    /* @Bean
+     public UserDetailsService userDetailsService(){
+         UserDetails userDetails = User.withUsername("user")
+                 .password("{noop}user")
+                 .authorities("ROLE_USER")
+                 .build();
+         return new InMemoryUserDetailsManager(userDetails);
+     }*/
+/*
     @Bean
     public RegisteredClientRepository registeredClientRepository(){
         RegisteredClient registeredClient = RegisteredClient.withId(UUID.randomUUID().toString())
@@ -96,16 +99,21 @@ public class AuthorizationSecurityConfig {
         return new InMemoryRegisteredClientRepository(registeredClient);
     }
 
-
-
+*/
+   /*
     @Bean
-    public OAuth2TokenCustomizer<JwtEncodingContext> tokenCustomizer(){
+    public ClientSettings clientSettings(){
+        return ClientSettings.builder().requireProofKey(true).build();
+    }
+    */
+    @Bean
+    public OAuth2TokenCustomizer<JwtEncodingContext> tokenCustomizer() {
         return context -> {
             Authentication principal = context.getPrincipal();
-            if(context.getTokenType().getValue().equals("id_token")){
+            if (context.getTokenType().getValue().equals("id_token")) {
                 context.getClaims().claim("token_type", "id token");
             }
-            if(context.getTokenType().getValue().equals("access_token")){
+            if (context.getTokenType().getValue().equals("access_token")) {
                 context.getClaims().claim("token_type", "access token");
                 //Se supone que deberia venir la informacion ya que si la tiene pero no importa
                 Set<String> roles = principal.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toSet());
@@ -113,18 +121,15 @@ public class AuthorizationSecurityConfig {
             }
         };
     }
-    @Bean
-    public ClientSettings clientSettings(){
-        return ClientSettings.builder().requireProofKey(true).build();
-    }
+
 
     @Bean
-    public AuthorizationServerSettings authorizationServerSettings(){
+    public AuthorizationServerSettings authorizationServerSettings() {
         return AuthorizationServerSettings.builder().issuer("http://localhost:9000").build();
     }
 
     @Bean
-    public JwtDecoder jwtDecoder(JWKSource<SecurityContext> jwkSource){
+    public JwtDecoder jwtDecoder(JWKSource<SecurityContext> jwkSource) {
         return OAuth2AuthorizationServerConfiguration.jwtDecoder(jwkSource);
     }
 
