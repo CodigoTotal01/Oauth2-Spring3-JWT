@@ -17,34 +17,23 @@ import java.util.Set;
 @Data
 @Builder
 public class AppUser implements UserDetails {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
+    private int id;
     private String username;
-
     private String password;
-
-
     @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(name = "app_user_role", joinColumns = @JoinColumn(name = "app_user_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id"))
+    @JoinTable(name = "app_user_role", joinColumns = @JoinColumn(name = "app_user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles;
-
     private boolean expired = false;
-
     private boolean locked = false;
-
     private boolean credentialsExpired = false;
-
     private boolean disabled = false;
-
 
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return null;
+        return roles;
     }
 
     @Override
@@ -55,7 +44,6 @@ public class AppUser implements UserDetails {
     @Override
     public boolean isAccountNonLocked() {
         return !locked;
-
     }
 
     @Override

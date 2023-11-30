@@ -16,9 +16,8 @@ import org.springframework.security.core.GrantedAuthority;
 public class Role implements GrantedAuthority {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Enumerated(EnumType.STRING) //Para que se guarde como String en la base de datos el nombre del rol
+    private int id;
+    @Enumerated(EnumType.STRING)
     private RoleName role;
 
     @Override

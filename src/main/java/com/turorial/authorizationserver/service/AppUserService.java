@@ -34,8 +34,12 @@ public class AppUserService {
                     .orElseThrow(()-> new RuntimeException("role not found"));
             roles.add(role);
         });
+
         appUser.setRoles(roles);
+        System.out.println("Hola mundo: " + "string: " + dto.roles() +"Autoridades:" + appUser.getAuthorities());;
+
         appUserRepository.save(appUser);
         return new MessageDto("user " + appUser.getUsername() + " saved");
     }
 }
+
